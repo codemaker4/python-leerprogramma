@@ -27,8 +27,8 @@ def kies_lijst(lijst_naam):
     nuLijstNaam = lijst_naam
 
 def leeg_scherm():
-    print('\n' * SCHERMHOOGTE)
-    # os.system('cls' if os.name == 'nt' else 'clear')
+    # print('\n' * SCHERMHOOGTE)
+    os.system('cls' if os.name == 'nt' else 'clear')
   #        Gebruikt: SCHERMHOOGTE
   #        Parameters: -
   #        Returnwaarde: -
@@ -50,7 +50,6 @@ def lees_woordenlijst(bestandsnaam):
         return GelezenWoordenlijst
 
     try:
-        print("yee")
         for regel in regels:
             woorden = regel.split(SCHEIDER)
             print(woorden)
@@ -116,25 +115,22 @@ def main():
   #         Returnwaarde: Geen
 
 def nieuwe_lijst():
-    while True:
-        print_window("Kies de naam van de nieuwe lijst. \nTyp '{}' om te annuleren.".format(STOPPEN))
-        answer = input("Antwoord hier: ")
-        bestandsnaam = answer + EXTENSIE
-        print(lees_woordenlijst(bestandsnaam))
-        print(lees_woordenlijst(bestandsnaam)[".error"][-11:])
-        if answer == STOPPEN:
-            return
-        elif len(answer) < 2:
-            print_popup("'{}' is een te korte naam. Kies een langere naam.".format(answer))
-        elif lees_woordenlijst(bestandsnaam)[".error"][-11:] != "niet vinden":
-            print_popup("'{}' bestaat al.".format(bestandsnaam))
-        else:
-            print_window("Lijst '{}' maken...".format(bestandsnaam))
-            schrijf_woordenlijst(bestandsnaam, {})
-            kies_lijst(bestandsnaam)
-            print_popup("Lijst '{}' gemaakt.\nDeze lijst is nu ook geselecteerd.\nNu kan je woorden toevoegen.".format(bestandsnaam))
-            voeg_woorden_toe(bestandsnaam)
-            return
+    # while True:
+    print_window("Kies de naam van de nieuwe lijst. \nTyp '{}' om te annuleren.".format(STOPPEN))
+    answer = input("Antwoord hier: ")
+    if answer == STOPPEN:
+        return
+    if len(answer) < 2:
+        print_popup("'{}' is een te korte naam. Kies een langere naam.".format(answer))
+        return
+    bestandsnaam = answer + EXTENSIE
+    print_window("Lijst '{}' maken...".format(bestandsnaam))
+    if lees_woordenlijst(bestandsnaam)[".error"][-11:] == "niet vinden": # als de lijst nog niet bestaat
+        schrijf_woordenlijst(bestandsnaam, {}) # maak de lijst aan
+    kies_lijst(bestandsnaam) # kies de lijst
+    print_popup("Lijst '{}' gemaakt.\nDeze lijst is nu ook geselecteerd.\nNu kan je woorden toevoegen.".format(bestandsnaam))
+    voeg_woorden_toe(bestandsnaam)
+    return
 
   # maak een nieuw bestand aan voor een nieuwe lijst en vraagt meteen om woorden toe te voegen.
 
@@ -365,7 +361,7 @@ def voeg_woordenlijst_toe(lijst_naam):
             if answer == STOPPEN:
                 return
             elif answer == OPSLAAN:
-                schrijf_woordenlijst(woorden, lijst_naam)
+                schrijf_woordenlijst(lijst_naam, woorden);
                 return
             elif answer == "e":
                 errorString = ""
