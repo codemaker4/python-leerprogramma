@@ -308,8 +308,4 @@ def afsluiten():
     print_afscheid()
     sys.exit()
 
-while True: # herhaalt totdat de afsluiten() functie is aangeroepen in main()
-    try:
-        main()
-    except:
-        print_popup("Er is iets fout gegaan. Er kunnen gegevens verloren zijn gegaan.")
+main()
