@@ -287,21 +287,27 @@ def voeg_woordenlijst_toe(lijst_naam):
         except:
             errors += ["Error: '{}': iets ging helemaal mis.".format(answer)]
 
-    while True:
-        print_window("Het toevoegen van woorden is klaar.\nEr zijn {} errors gevonden.\ntyp 'e' om de errors te bekijken.\ntyp '{}' om op te slaan\ntyp '{}' om te annuleren.".format(len(errors), OPSLAAN, STOPPEN))
+    print_window("Het toevoegen van woorden is klaar.\nEr zijn {} errors gevonden.\ntyp 'e' om de errors te bekijken.\ntyp '{}' om op te slaan\ntyp '{}' om te annuleren.".format(len(errors), OPSLAAN, STOPPEN))
+    answer = input("typ hier: ")
+    if answer == STOPPEN:
+        return
+    elif answer == OPSLAAN:
+        schrijf_woordenlijst(lijst_naam, woorden);
+        return
+    elif answer == "e":
+        errorString = ""
+        for error in errors:
+            errorString += error + "\n"
+        print_popup("Hier zijn de errors:\n{}".format(errorString))
+        print_window("Wil je de lijst opslaan?\ntyp '{}' om te annuleren\ntyp '{}' om op te slaan.".format(STOPPEN, OPSLAAN))
         answer = input("typ hier: ")
         if answer == STOPPEN:
             return
         elif answer == OPSLAAN:
             schrijf_woordenlijst(lijst_naam, woorden);
             return
-        elif answer == "e":
-            errorString = ""
-            for error in errors:
-                errorString += error + "\n"
-            print_popup("Hier zijn de errors:\n{}".format(errorString))
-        else:
-            print_popup("{} is geen commando.".format(answer))
+    else:
+        print_popup("{} is geen commando.".format(answer))
 
 def afsluiten():
     '''print een afscheid en sluit alles af'''
