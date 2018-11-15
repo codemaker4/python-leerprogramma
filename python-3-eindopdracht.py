@@ -21,14 +21,17 @@ ALLE = 'a'
 
 nuLijstNaam = STANDAARD_LIJST
 
+
 def kies_lijst(lijst_naam):
     '''wijzigt de variabele die de bestandsnaam van de geselecteerde lijst onthoud.'''
     global nuLijstNaam
     nuLijstNaam = lijst_naam
 
+
 def leeg_scherm():
     '''leegt het scherm.'''
     os.system('cls' if os.name == 'nt' else 'clear')
+
 
 def woordenlijst_tekst(woordenlijst):
     '''returneert de woordenlijst als een leesbare string met uitlijning en enters'''
@@ -37,6 +40,7 @@ def woordenlijst_tekst(woordenlijst):
         if woord[0] != ".":
             woordenlijstTekst += "{:>30} = {}\n".format(woord, woordenlijst[woord])
     return(woordenlijstTekst)
+
 
 def lees_woordenlijst(bestandsnaam):
     '''leest het bestand, geeft errors mee in de dictionary'''
@@ -61,6 +65,7 @@ def lees_woordenlijst(bestandsnaam):
         GelezenWoordenlijst[".error"] = "error: error tijdens het begrijpen van {}".format(bestandsnaam)
     return GelezenWoordenlijst
 
+
 def schrijf_woordenlijst(bestandsnaam, woordenlijst):
     '''schrijft de gegeven dictionary naar de gegeven bestandslocatie/naam, overschrijft als nodig.'''
     bestand = open(bestandsnaam, "w")
@@ -70,9 +75,11 @@ def schrijf_woordenlijst(bestandsnaam, woordenlijst):
 
     bestand.close()
 
+
 def main():
     '''Dit is het main menu. Vanaf hier kan je naar alle functies navigeren'''
-    while True: # herhaal totdat de afsluiten() functie is aangeroepen. Dit doet een sys.exit.
+    answer = ""
+    while answer != STOPPEN: # herhaal totdat de afsluiten() functie is aangeroepen. Dit doet een sys.exit.
         print_menu(nuLijstNaam) # print alle kiesbare commando's met betekenissen
         answer = input("Antwoord hier: ")
         if answer == NIEUWE_LIJST:
@@ -85,10 +92,8 @@ def main():
             voeg_woordenlijst_toe(nuLijstNaam) # laat je een gehele lijst importeren.
         elif answer == OVERHOREN:
             overhoren(nuLijstNaam) # Leest en overhoort de woordenlijst op de gegeven bestandslocatie.
-        elif answer == STOPPEN:
-            afsluiten() # print een afscheid en sluit alles af.
-        else:
-            print_popup("Het commando '{}' is geen kiesbaar commando.".format(answer))
+    afsluiten() # print een afscheid en sluit alles af.
+
 
 def nieuwe_lijst():
     '''maakt een nieuwe lijst, laat je woorden toevoegen en sslaat de lijst op.'''
@@ -108,6 +113,32 @@ def nieuwe_lijst():
     voeg_woorden_toe(bestandsnaam)
     return
 
+
+def overhoorWoord(question, corrAnswer):
+    '''overhoort één woord.'''
+    global answer
+    hintLetters = ["-"] * len(corrAnswer)
+    hintVolgorde = []
+    for i in range(0,len(corrAnswer)):
+        hintVolgorde += [i]
+    random.shuffle(hintVolgorde)
+
+    pogingen = 0
+    print_window("Wat is {}?\nHint: {}\nTyp /{} om te stoppen".format(question, "".join(hintLetters), STOPPEN))
+    answer = input("antwoord hier:")
+    while answer != "/"+STOPPEN and pogingen < len(corrAnswer):
+        if answer == corrAnswer:
+            print_popup("Je had het goed na {} pogingen!".format(pogingen))
+            break
+        elif len(answer) > 0: # alleen zeggen dat het fout is als er uberhaupt iets is ingevoerd. Dan kan je gewoon op enter drukken voor een hint.
+            print_popup("{} is niet goed, probeer het nog eens.".format(answer))
+        pogingen += 1
+        hintLetters[hintVolgorde[pogingen-1]] = corrAnswer[hintVolgorde[pogingen-1]]
+
+        print_window("Wat is {}?\nHint: {}\nTyp /{} om te stoppen".format(question, "".join(hintLetters), STOPPEN))
+        answer = input("antwoord hier:")
+
+
 def overhoren(woordenlijstnaam):
     '''Leest en overhoort de woordenlijst op de gegeven bestandslocatie.'''
     woorden = lees_woordenlijst(woordenlijstnaam)
@@ -117,71 +148,44 @@ def overhoren(woordenlijstnaam):
     del woorden[".error"]
 
     print_popup("Woordenlijst {} wordt overhoort.".format(woordenlijstnaam))
-    playing = True
-    while playing:
+    global answer
+    answer = ""
+    while answer != "/"+STOPPEN:
         if random.randrange(0,2) < 1:
             question, corrAnswer = random.choice(list(woorden.items()))
         else:
             corrAnswer, question = random.choice(list(woorden.items()))
-        hintLetters = ["-"] * len(corrAnswer)
-        hintVolgorde = []
-        for i in range(0,len(corrAnswer)):
-            hintVolgorde += [i]
-        random.shuffle(hintVolgorde)
-        pogingen = 0
-        while True:
-            print_window("Wat is {}?\nHint: {}\nTyp /{} om te stoppen".format(question, "".join(hintLetters), STOPPEN))
-            answer = input("antwoord hier:")
-            if len(answer) == 0:
-                pass
-            elif answer[0] == "/":
-                if answer == "/"+STOPPEN:
-                    playing = False
-                    break
-                else:
-                    print_popup("{} is geen commando.".format(answer))
-            elif answer == corrAnswer:
-                print_popup("Je had het goed na {} pogingen!".format(pogingen))
-                break
-            else:
-                print_popup("{} is niet goed, probeer het nog eens.".format(answer))
-            pogingen += 1
-            if pogingen > len(corrAnswer):
-                print_popup("Het antwoord was: {}".format(corrAnswer))
-                break
-            hintLetters[hintVolgorde[pogingen-1]] = corrAnswer[hintVolgorde[pogingen-1]]
+
+        overhoorWoord(question, corrAnswer)
+
 
 def print_afscheid():
     '''print een afscheid.'''
-    print('\n' * SCHERMHOOGTE)
+    leeg_scherm()
     print('tot ziens!')
     print('         |"" |\  /|  /| ')
     print('MADE BY: |   | \/ | /_|_')
     print('         |__ |    |   | ')
     print('codemaker4.github.io')
 
+
 def print_header():
     '''print de bovenkant van een window.'''
     print(LIJNH * SCHERMBREEDTE)
     print(LIJNV + ' '*(SCHERMBREEDTE-2) + LIJNV)
+
 
 def print_regel(inhoud=''):
     '''print de gegeven tekst tussen zij streepjes in. combineer met print_header() en print_footer() voor het printen van een volledig window met tekst.'''
     string = "{}  {:" + str(SCHERMBREEDTE-6) + "}  {}"
     print(string.format(LIJNV, inhoud, LIJNV))
 
+
 def print_footer():
     '''print de bovenkant van een onderkant.'''
     print(LIJNV + ' '*(SCHERMBREEDTE-2) + LIJNV)
     print(LIJNH * SCHERMBREEDTE)
-  #         Print het volgende over de hele breedte van het scherm:
-  #         |             |
-  #         ===============
-  #         Dus een volle regel met '='-tekens en een regel die begint en eindigt met een '|'.
-  #
-  #         Gebruikt: SCHERMBREEDTE
-  #         Parameters: -
-  #         Returnwaarde: -
+
 
 def print_window(tekst):
     '''leegt het scherm en print alle componenten van een window met de gegeven tekst erin.'''
@@ -192,14 +196,17 @@ def print_window(tekst):
         print_regel(tekstRegel)
     print_footer()
 
+
 def print_menu(lijst_naam):
     '''print de tekst voor het main menu'''
     print_window("Hier is het centrale keuzemenu:\n\nJe hebt nu lijst {} geselecteerd.\n{} = nieuwe woordenlijst maken\n{} = veranderen van woordenlijst.\n{} = toevoegen/verwijderen van woorden in woordenlijst {}.\n{} = woordenlijst importeren.\n{} = woordenlijst {} overhoren\n{} = programma afsluiten".format(lijst_naam, NIEUWE_LIJST, KIES_LIJST, TOEVOEGEN, lijst_naam, ALLE, OVERHOREN, lijst_naam, STOPPEN))
+
 
 def print_popup(tekst):
     '''print een wondow met de gegeven tekst + 'druk op enter om door te gaan' erin en wacht totdat de gebruiker op enter drukt.'''
     print_window("{}\n\ndruk op enter om door te gaan".format(tekst))
     input() # gegeven iput wordt niet onthouden/gebruikt. Het wacht alleen totdat de gebruiker iets invoert (dus op enter drukt)
+
 
 def kies_nieuwe_lijst():
     '''laat je een nieuwe lijst selecteren en controleert of die lijst bestaat en leesbaar is.'''
@@ -216,25 +223,22 @@ def kies_nieuwe_lijst():
         kies_lijst(bestandsnaam)
         print_popup("'{}' is gekozen.".format(bestandsnaam))
 
+
 def verwijder_woord(woordenlijst, woordenlijstNaam):
     '''laat je een woord uit de specifieke lijst verwijderen. Krijgt de dictionary IPV een bestadslocatie en retourneert de dictionary zonder het eventueel verwijderde woord IPV de dictionary zelf opteslaan.'''
-    aanHetZoeken = True
-    while aanHetZoeken:
+    print_window("Typ het woord dat je wilt verwijderen.\nHier is de lijst:\n{}\ntyp {} om te annuleren".format(woordenlijst_tekst(woordenlijst), STOPPEN))
+    antwoord = input("Typ hier: ")
+    while antwoord != STOPPEN:
+        if antwoord in woordenlijst:
+            del woordenlijst[antwoord]
+        else:
+            print_popup("Het antwoord {} is geen commando of woord. Probeer het opnieuw.\nTIP: het werkt alleen met het woord VOOR de '='.".format(antwoord))
+
         print_window("Typ het woord dat je wilt verwijderen.\nHier is de lijst:\n{}\ntyp {} om te annuleren".format(woordenlijst_tekst(woordenlijst), STOPPEN))
         antwoord = input("Typ hier: ")
-        if antwoord == STOPPEN:
-            aanHetZoeken = False
-        else:
-            print_window("zoeken...")
-            for woord in woordenlijst:
-                if antwoord == woord:
-                    woord = antwoord
-                    del woordenlijst[woord]
-                    aanHetZoeken = False
-                    break
-        if aanHetZoeken:
-            print_popup("Het antwoord {} is geen commando of woord. Probeer het opnieuw.\nTIP: het werkt alleen met het woord VOOR de '='.".format(antwoord))
-        return woordenlijst
+
+    return woordenlijst
+
 
 def voeg_woorden_toe(lijst_naam):
     '''laat je woorden toevoegen/verwijderen aan de lijst op de gegeven bestandslocatie.'''
@@ -244,20 +248,21 @@ def voeg_woorden_toe(lijst_naam):
         return
     del woorden[".error"]
     antwoord = ""
-    while True:
-        print_window("Woordenlijst: {}\nWoorden:\n{}\nTyp '[woord] = [woord]' om woorden aan de lijst toe te voegen.\nTyp '{}' om een woord te verwijderen.\nTyp '{}' om te stoppen en deze lijst op te slaan.".format(lijst_naam, woordenlijst_tekst(woorden), DELETE, STOPPEN))
-        antwoord = input("Typ hier: ")
+    print_window("Woordenlijst: {}\nWoorden:\n{}\nTyp '[woord] = [woord]' om woorden aan de lijst toe te voegen.\nTyp '{}' om een woord te verwijderen.\nTyp '{}' om te stoppen en deze lijst op te slaan.".format(lijst_naam, woordenlijst_tekst(woorden), DELETE, STOPPEN))
+    antwoord = input("Typ hier: ")
+    while antwoord != STOPPEN:
         splitAntwoord = antwoord.split(" = ")
-        if antwoord == STOPPEN:
-            schrijf_woordenlijst(lijst_naam, woorden)
-            return
-        elif antwoord == DELETE:
+        if antwoord == DELETE:
             woorden = verwijder_woord(woorden, lijst_naam)
         elif len(splitAntwoord) == 2:
             woorden[splitAntwoord[0]] = splitAntwoord[1]
             print(woorden)
         else:
             print_popup("'{}' is geen commando of toevoegbaar woord.".format(antwoord))
+        print_window("Woordenlijst: {}\nWoorden:\n{}\nTyp '[woord] = [woord]' om woorden aan de lijst toe te voegen.\nTyp '{}' om een woord te verwijderen.\nTyp '{}' om te stoppen en deze lijst op te slaan.".format(lijst_naam, woordenlijst_tekst(woorden), DELETE, STOPPEN))
+        antwoord = input("Typ hier: ")
+    schrijf_woordenlijst(lijst_naam, woorden)
+
 
 def voeg_woordenlijst_toe(lijst_naam):
     '''laat je een gehele lijst importeren'''
@@ -270,11 +275,8 @@ def voeg_woordenlijst_toe(lijst_naam):
     tempScheider = input("Voer hier het symbool in: ")
     errors = []
     print_window("Alles staat klaar. Nu hoef je alleen maar de tekst in te voeren.\nDit doe je door de woorden te selecteren, CTRL+C in te drukken,\nTerug naar dit programma te gaan en CTRL+V te drukken (voor windows)\ntyp '\klaar' als de woorden zijn ingevoerd.")
-    answer = ""
-    while True:
-        answer = input("Plak de woorden hier, typ '/klaar als dit klaar is.': ")
-        if answer == "/klaar":
-            break
+    answer = input("Plak de woorden hier, typ '/klaar als dit klaar is.': ")
+    while answer != "/klaar":
         try:
             splitAnswer = answer.split(tempScheider)
             if len(splitAnswer) == 2:
@@ -286,6 +288,7 @@ def voeg_woordenlijst_toe(lijst_naam):
                 errors += ["Error: '{}': er zijn {} woorden gevonden, terwijl alleen exact 2 woorden zijn toegestaan.".format(answer, len(splitAnswer))]
         except:
             errors += ["Error: '{}': iets ging helemaal mis.".format(answer)]
+        answer = input("Plak de woorden hier, typ '/klaar als dit klaar is.': ")
 
     print_window("Het toevoegen van woorden is klaar.\nEr zijn {} errors gevonden.\ntyp 'e' om de errors te bekijken.\ntyp '{}' om op te slaan\ntyp '{}' om te annuleren.".format(len(errors), OPSLAAN, STOPPEN))
     answer = input("typ hier: ")
@@ -309,9 +312,12 @@ def voeg_woordenlijst_toe(lijst_naam):
     else:
         print_popup("{} is geen commando.".format(answer))
 
+
 def afsluiten():
     '''print een afscheid en sluit alles af'''
     print_afscheid()
     sys.exit()
+
+
 
 main()
